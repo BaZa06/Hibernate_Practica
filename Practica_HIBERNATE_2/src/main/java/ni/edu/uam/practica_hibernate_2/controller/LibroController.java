@@ -53,7 +53,7 @@ public class LibroController {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
         colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
-        colAnio_publicacion.setCellValueFactory(new PropertyValueFactory<>("anio_publiacion"));
+        colAnio_publicacion.setCellValueFactory(new PropertyValueFactory<>("anio"));
         colPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
         tblLibros.getSelectionModel().selectedItemProperty().addListener((
                 obs, oldValue, newValue) -> {
