@@ -15,15 +15,15 @@ public class JPAUtil {
     public static synchronized void iniciar() {
         String password = null;
         if (entityManagerFactory == null) {
-            password = System.getenv("DB_password");
+            password = System.getenv("DB_PASSWORD");
             if (password == null || password.isBlank()) {
                 throw new RuntimeException("DB_PASSWORD enviorment variable is emtpy");
             }
         }
 
         Map<String, Object> propiedades = new HashMap<>();
-        propiedades.put("jakarta.persistance.jdbc.password", password);
-        entityManagerFactory = Persistence.createEntityManagerFactory("bdbiblioteca", propiedades);
+        propiedades.put("jakarta.persistence.jdbc.password", password);
+        entityManagerFactory = Persistence.createEntityManagerFactory("bibliotecaPU", propiedades);
 
     }
     public static EntityManager getEntityManager(){
