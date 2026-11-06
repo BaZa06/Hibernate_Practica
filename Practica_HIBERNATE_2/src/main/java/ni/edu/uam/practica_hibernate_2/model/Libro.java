@@ -30,18 +30,14 @@ public class Libro {
 
     }
 
-    public Libro(Long id, String titulo, String autor, String anio_publicacion, BigDecimal precio) {
+    public Libro(Long id) {
         this.id = id;
-        this.titulo = titulo;
-        this.autor = autor;
-        this.anio_publicacion = Integer.valueOf(anio_publicacion);
-        this.precio = precio;
     }
 
-    public Libro(String titulo, String autor, String anio_publicacion, BigDecimal precio) {
+    public Libro(String titulo, String autor, Integer anio_publicacion, BigDecimal precio) {
         this.titulo = titulo;
         this.autor = autor;
-        this.anio_publicacion = Integer.valueOf(anio_publicacion);
+        this.anio_publicacion = anio_publicacion;
         this.precio = precio;
     }
 

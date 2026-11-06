@@ -53,7 +53,7 @@ public class LibroController {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colTitulo.setCellValueFactory(new PropertyValueFactory<>("titulo"));
         colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
-        colAnio_publicacion.setCellValueFactory(new PropertyValueFactory<>("anio"));
+        colAnio_publicacion.setCellValueFactory(new PropertyValueFactory<>("anio_publicacion"));
         colPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
         tblLibros.getSelectionModel().selectedItemProperty().addListener((
                 obs, oldValue, newValue) -> {
@@ -89,7 +89,7 @@ public class LibroController {
     private Libro obtenerLibroFormulario() {
         String titulo = txtTitulo.getText();
         String autor = txtAutor.getText();
-        String anio_publicacion = txtAnio_publicacion.getText();
+        Integer anio_publicacion = Integer.valueOf(txtAnio_publicacion.getText());
         BigDecimal precio = new BigDecimal(txtPrecio.getText());
         return new Libro(titulo, autor, anio_publicacion, precio);
     }
