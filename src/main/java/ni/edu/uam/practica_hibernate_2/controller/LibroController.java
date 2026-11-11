@@ -116,12 +116,87 @@ public class LibroController {
     }
 
     private Libro obtenerLibroFormulario() {
-        String titulo = txtTitulo.getText();
-        String autor = txtAutor.getText();
-        Integer anio_publicacion = Integer.valueOf(txtAnio_publicacion.getText());
-        BigDecimal precio = new BigDecimal(txtPrecio.getText());
+        String titulo = txtTitulo.getText() == null ? "" : txtTitulo.getText().trim();
+        String autor = txtAutor.getText() == null ? "" : txtAutor.getText().trim();
+        String textoAnio = txtAnio_publicacion.getText() == null
+                ? "" : txtAnio_publicacion.getText().trim();
+        String textoPrecio = txtPrecio.getText() == null
+                ? "" : txtPrecio.getText().trim();
+
+        if (titulo.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Falta el título",
+                    "Escribe el título del libro.");
+            txtTitulo.requestFocus();
+            return null;
+        }
+
+        if (titulo.length() > 150) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Título demasiado largo",
+                    "El título no puede superar los 150 caracteres.");
+            txtTitulo.requestFocus();
+            return null;
+        }
+
+        if (autor.isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Falta el autor",
+                    "Escribe el nombre del autor.");
+            txtAutor.requestFocus();
+            return null;
+        }
+
+        if (autor.length() > 100) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Autor demasiado largo",
+                    "El nombre del autor no puede superar los 100 caracteres.");
+            txtAutor.requestFocus();
+            return null;
+        }
+
+        if (!textoAnio.matches("\\d+")) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Año inválido",
+                    "El año debe contener solo números enteros.");
+            txtAnio_publicacion.requestFocus();
+            return null;
+        }
+
+        int anio;
+        try {
+            anio = Integer.parseInt(textoAnio);
+        } catch (NumberFormatException ex) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Año inválido",
+                    "El año está fuera del rango permitido.");
+            txtAnio_publicacion.requestFocus();
+            return null;
+        }
+
+        if (anio < 1450 || anio > 21000) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Año fuera de rango",
+                    "El año debe estar entre 1450 y 21000.");
+            txtAnio_publicacion.requestFocus();
+            return null;
+        }
+
+        // Acepta un punto decimal y hasta dos cifras decimales.
+        // No acepta letras, signos, comas ni más de 10 dígitos enteros.
+        if (!textoPrecio.matches("\\d{1,10}(\\.\\d{1,2})?")) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Precio inválido",
+                    "Escribe un precio no negativo, con hasta 10 dígitos enteros "
+                            + "y máximo 2 decimales. Usa punto para los decimales; "
+                            + "por ejemplo: 19.99.");
+            txtPrecio.requestFocus();
+            return null;
+        }
+
+        BigDecimal precio = new BigDecimal(textoPrecio);
+
         Categoria categoria = cmbCategorias.getSelectionModel().getSelectedItem();
-        return new Libro(titulo, autor, anio_publicacion, precio, categoria);
+        if (categoria == null || categoria.getId() == null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Validación", "Categoría inválida",
+                    "Selecciona una categoría válida.");
+            cmbCategorias.requestFocus();
+            return null;
+        }
+
+        return new Libro(titulo, autor, anio, precio, categoria);
     }
 
 
@@ -132,8 +207,14 @@ public class LibroController {
             libroDAO.guardar(libro);
             limpiarFormulario();
             cargarLibros();
+
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Libro guardado",
+                    "Operación completada", "El libro se guardó correctamente.");
         }catch (Exception ex){
             ex.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error al guardar",
+                    "No se pudo guardar el libro",
+                    "Revisa la conexión con la base de datos y los datos ingresados.");
         }
     }
 
@@ -144,50 +225,82 @@ public class LibroController {
             libro.setId(idSeleccionado);
             boolean modificado = libroDAO.modificar(libro);
 
-            if (!modificado) {
-
-                // Cuando el DAO no encontró el libro seleccionado
+            // Validación para verificar si se seleccionó un libro y si la modificación fue exitosa
+            if (idSeleccionado == null) {
+                mostrarAlerta(Alert.AlertType.WARNING, "Sin selección",
+                        "Selecciona un libro", "Debes seleccionar un libro para modificarlo.");
                 return;
+            }
 
-            // Alert para indicar que hubo un error al nivel de transacción
+
+            if (!modificado) {
+                // Alert para indicar que no se encontró el libro en la base de datos
+                mostrarAlerta(Alert.AlertType.WARNING, "No se modificó",
+                        "Libro no encontrado",
+                        "No se encontró el libro seleccionado en la base de datos.");
+
+                return;
             }
             limpiarFormulario();
             cargarLibros();
 
             // Alert para indicar que la modificación fue exitosa
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Libro modificado",
+                    "Operación completada", "El libro se modificó correctamente.");
 
         } catch (Exception ex) {
-
             ex.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error al modificar",
+                    "No se pudo modificar el libro",
+                    "Revisa la conexión con la base de datos y los datos ingresados.");
         }
     }
 
 
     @FXML
     private void eliminarLibro() {
+
+        // Validación para verificar si se seleccionó un libro antes de intentar eliminarlo
+        if (idSeleccionado == null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Sin selección",
+                    "Selecciona un libro", "Debes seleccionar un libro para eliminarlo.");
+            return;
+        }
+
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Confirmar eliminación");
+        confirmacion.setHeaderText("Eliminar libro");
+        confirmacion.setContentText("¿Seguro que deseas eliminar el libro seleccionado?");
+
+        Optional<ButtonType> resultado = confirmacion.showAndWait();
+        if (resultado.isEmpty() || resultado.get() != ButtonType.OK) {
+            return;
+        }
+
+
         try {
-            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmacion.setTitle("Confirmación de eliminación de datos");
-            confirmacion.setHeaderText("Eliminar libro");
-            confirmacion.setContentText("¿Está seguro de que desea eliminar este libro?");
-
-            Optional<ButtonType> resultado = confirmacion.showAndWait();
-            if(resultado.isEmpty() || resultado.get() != ButtonType.OK){
+            // Intentar eliminar el libro seleccionado en caso de que no se encuentre en la base de datos, mostrar un mensaje de advertencia
+            if (!libroDAO.eliminar(idSeleccionado)) {
+                mostrarAlerta(Alert.AlertType.WARNING, "No se eliminó",
+                        "Libro no encontrado",
+                        "No se encontró el libro seleccionado en la base de datos.");
                 return;
             }
 
-            boolean eliminado = libroDAO.eliminar(idSeleccionado);
-            if (!eliminado) {
-                // Alert para indicar que hubo un error al nivel de transacción
-                return;
-            }
 
-            // Alert para indicar que la operación fue exitosa
             limpiarFormulario();
             cargarLibros();
 
+            // Si la eliminación fue exitosa, limpiar el formulario y recargar la lista de libros
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Libro eliminado",
+                    "Operación completada", "El libro se eliminó correctamente.");
+
+        // Validación para verificar si se seleccionó un libro antes de intentar eliminarlo
         } catch (Exception ex) {
             ex.printStackTrace();
+            mostrarAlerta(Alert.AlertType.ERROR, "Error al eliminar",
+                    "No se pudo eliminar el libro",
+                    "Revisa la conexión con la base de datos.");
         }
     }
 
@@ -224,4 +337,19 @@ public class LibroController {
         cmbCategorias.getSelectionModel().clearSelection();
         actualizarBotones();
     }
+
+    // Método para mostrar alertas
+    private void mostrarAlerta(
+            Alert.AlertType tipo,
+            String titulo,
+            String encabezado,
+            String mensaje
+    ) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(encabezado);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+
 }
