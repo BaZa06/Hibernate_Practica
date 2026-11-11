@@ -21,7 +21,8 @@ public class Categoria {
     private String descripcion;
 
     @OneToMany(mappedBy = "categorias", fetch = FetchType.LAZY)
-    private List<Libro> libro = new ArrayList<>();
+    private List<Libro> libros = new ArrayList<>();
+
 
     public Categoria() {
     }
@@ -53,5 +54,14 @@ public class Categoria {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public List<Libro> getLibros() {
+        return libros;
+    }
+
+    @Override
+    public String toString() {
+        return nombre;
     }
 }

@@ -22,7 +22,7 @@ public class Libro {
     @Column(name = "anio_publicacion", nullable = false)
     private Integer anio_publicacion;
 
-    @Column(name = "precio", nullable = false, precision = 10, scale = 2)
+    @Column(name = "precio", nullable = false, precision = 12, scale = 2)
     private BigDecimal precio;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

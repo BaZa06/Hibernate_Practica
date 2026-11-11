@@ -13,7 +13,7 @@ public class BibliotecaApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(BibliotecaApplication.class.getResource("libros-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("Hello!");
+        stage.setTitle("Bienvenid@ al registro de libros");
         stage.setScene(scene);
         stage.show();
     }

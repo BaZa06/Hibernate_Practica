@@ -41,15 +41,15 @@ public class LibroController {
     @FXML
     private TableView<Libro> tblLibros;
     @FXML
-    private TableColumn<Libro, Integer> colId;
+    private TableColumn<Libro, Long> colId;
     @FXML
     private TableColumn<Libro, String> colTitulo;
     @FXML
     private TableColumn<Libro, String> colAutor;
     @FXML
-    private TableColumn<Libro, String> colAnio_publicacion;
+    private TableColumn<Libro, Integer> colAnio_publicacion;
     @FXML
-    private TableColumn<Libro, Double> colPrecio;
+    private TableColumn<Libro, BigDecimal> colPrecio;
     @FXML
     private TableColumn<Libro, String> colCategoria;
 
@@ -196,7 +196,7 @@ public class LibroController {
         try {
             List<Libro> libros = libroDAO.listar();
             limpiarFormulario();
-            tblLibros.getItems().addAll(FXCollections.observableArrayList(libros));
+            tblLibros.setItems(FXCollections.observableArrayList(libros));
         } catch (Exception ex) {
             ex.printStackTrace();
         }

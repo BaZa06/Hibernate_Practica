@@ -71,7 +71,7 @@ public class LibroDAO {
             tx.begin();
             Libro libroBD = em.find(Libro.class, libro.getId());
 
-            if (libroBD != null){
+            if (libroBD == null){
                 tx.rollback();
                 return false;
             }
