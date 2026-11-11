@@ -83,6 +83,7 @@ public class LibroController {
                 actualizarBotones();
             }
         });
+
         actualizarBotones();
         cargarLibros();
 
@@ -144,6 +145,10 @@ public class LibroController {
             boolean modificado = libroDAO.modificar(libro);
 
             if (!modificado) {
+
+                // Cuando el DAO no encontró el libro seleccionado
+                return;
+
             // Alert para indicar que hubo un error al nivel de transacción
             }
             limpiarFormulario();
@@ -165,8 +170,6 @@ public class LibroController {
             confirmacion.setTitle("Confirmación de eliminación de datos");
             confirmacion.setHeaderText("Eliminar libro");
             confirmacion.setContentText("¿Está seguro de que desea eliminar este libro?");
-            confirmacion.showAndWait();
-
 
             Optional<ButtonType> resultado = confirmacion.showAndWait();
             if(resultado.isEmpty() || resultado.get() != ButtonType.OK){
@@ -176,6 +179,7 @@ public class LibroController {
             boolean eliminado = libroDAO.eliminar(idSeleccionado);
             if (!eliminado) {
                 // Alert para indicar que hubo un error al nivel de transacción
+                return;
             }
 
             // Alert para indicar que la operación fue exitosa
@@ -218,5 +222,6 @@ public class LibroController {
         txtAnio_publicacion.clear();
         txtPrecio.clear();
         cmbCategorias.getSelectionModel().clearSelection();
+        actualizarBotones();
     }
 }
