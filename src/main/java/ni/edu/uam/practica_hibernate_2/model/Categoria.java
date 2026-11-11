@@ -20,7 +20,7 @@ public class Categoria {
     @Column(name = "descripcion", nullable = true, length = 250)
     private String descripcion;
 
-    @OneToMany(mappedBy = "categorias", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "categoria", fetch = FetchType.LAZY)
     private List<Libro> libros = new ArrayList<>();
 
 
