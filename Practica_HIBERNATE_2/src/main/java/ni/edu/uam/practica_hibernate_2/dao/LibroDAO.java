@@ -3,11 +3,28 @@ package ni.edu.uam.practica_hibernate_2.dao;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import ni.edu.uam.practica_hibernate_2.database.JPAUtil;
+import ni.edu.uam.practica_hibernate_2.model.Categoria;
 import ni.edu.uam.practica_hibernate_2.model.Libro;
 
 import java.util.List;
 
 public class LibroDAO {
+
+
+    private Categoria obetenerCategoria(EntityManager em, Libro libro) {
+
+        // Validamos que el libro no sea null
+        if(libro.getCategoria() == null || libro.getCategoria().getId() == null) {
+            throw new RuntimeException("El libro no tiene una categoría válida.");
+        }
+
+        Long categoriaId = libro.getCategoria().getId();
+        Categoria categoria = em.find(Categoria.class, categoriaId);
+        if(categoria == null) {
+            throw new RuntimeException("No se encontró la categoría con ID: " + categoriaId);
+        }
+        return categoria;
+    }
 
 
     public void guardar(Libro libro){
@@ -17,6 +34,11 @@ public class LibroDAO {
         try{
             //Iniciar la transaccio en PostgreSQL
             tx.begin();
+
+            // Para obtener la categoría asociada al libro y asegurarnos de que existe en la base de datos
+            Categoria categoria = obetenerCategoria(em, libro);
+            libro.setCategoria(categoria);
+
             //Decirle a Hibernate que prepare la persistencia del objeto
             em.persist(libro);
             tx.commit();
@@ -33,7 +55,7 @@ public class LibroDAO {
     public List<Libro> listar(){
         EntityManager em = JPAUtil.getEntityManager();
         try{
-            return em.createQuery("SELECT l FROM Libro l ORDER BY l.id", Libro.class).getResultList();
+            return em.createQuery("SELECT l FROM Libro l JOIN FETCH l.categoria ORDER BY l.id", Libro.class).getResultList();
         }
         finally {
             em.close();
@@ -52,6 +74,11 @@ public class LibroDAO {
                 tx.rollback();
                 return false;
             }
+
+            // Para obtener la categoría asociada al libro y asegurarnos de que existe en la base de datos
+            Categoria categoria = obetenerCategoria(em, libro);
+            libroBD.setCategoria(categoria);
+
 
             libroBD.setTitulo(libro.getTitulo());
             libroBD.setAutor(libro.getAutor());

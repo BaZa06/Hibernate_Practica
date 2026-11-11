@@ -1,10 +1,13 @@
 package ni.edu.uam.practica_hibernate_2.controller;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import ni.edu.uam.practica_hibernate_2.dao.CategoriaDAO;
 import ni.edu.uam.practica_hibernate_2.dao.LibroDAO;
+import ni.edu.uam.practica_hibernate_2.model.Categoria;
 import ni.edu.uam.practica_hibernate_2.model.Libro;
 
 import java.math.BigDecimal;
@@ -31,6 +34,9 @@ public class LibroController {
     @FXML
     private Button btnLimpiar;
 
+    @FXML
+    private ComboBox<Categoria> cmbCategorias;
+
 
     @FXML
     private TableView<Libro> tblLibros;
@@ -44,8 +50,12 @@ public class LibroController {
     private TableColumn<Libro, String> colAnio_publicacion;
     @FXML
     private TableColumn<Libro, Double> colPrecio;
+    @FXML
+    private TableColumn<Libro, String> colCategoria;
+
 
     private final LibroDAO libroDAO = new LibroDAO();
+    private final CategoriaDAO categoriaDAO = new CategoriaDAO();
 
     private Long idSeleccionado = null;
 
@@ -55,6 +65,15 @@ public class LibroController {
         colAutor.setCellValueFactory(new PropertyValueFactory<>("autor"));
         colAnio_publicacion.setCellValueFactory(new PropertyValueFactory<>("anio_publicacion"));
         colPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
+        colCategoria.setCellValueFactory(data -> {
+
+            Categoria categoria = data.getValue().getCategoria();
+
+            String nombre = categoria != null
+                    ? categoria.getNombre()
+                    : "Sin categoría";
+            return new SimpleStringProperty(nombre);
+        });
         tblLibros.getSelectionModel().selectedItemProperty().addListener((
                 obs, oldValue, newValue) -> {
             if (newValue != null) {
@@ -67,6 +86,9 @@ public class LibroController {
         actualizarBotones();
         cargarLibros();
 
+        // Cargar categorías en el ComboBox
+        cargarCategorias();
+
     }
 
 
@@ -76,6 +98,12 @@ public class LibroController {
         txtAutor.setText(libro.getAutor());
         txtAnio_publicacion.setText(String.valueOf(libro.getAnio_publicacion()));
         txtPrecio.setText(String.valueOf(libro.getPrecio()));
+        Categoria categoria = libro.getCategoria();
+        if (categoria != null) {
+            cmbCategorias.getSelectionModel().select(categoria);
+        } else {
+            cmbCategorias.getSelectionModel().clearSelection();
+        }
         actualizarBotones();
 
     }
@@ -91,7 +119,8 @@ public class LibroController {
         String autor = txtAutor.getText();
         Integer anio_publicacion = Integer.valueOf(txtAnio_publicacion.getText());
         BigDecimal precio = new BigDecimal(txtPrecio.getText());
-        return new Libro(titulo, autor, anio_publicacion, precio);
+        Categoria categoria = cmbCategorias.getSelectionModel().getSelectedItem();
+        return new Libro(titulo, autor, anio_publicacion, precio, categoria);
     }
 
 
@@ -171,6 +200,16 @@ public class LibroController {
     }
 
     @FXML
+    private void cargarCategorias() {
+        try {
+            List<Categoria> categoria = categoriaDAO.listar();
+            cmbCategorias.setItems(FXCollections.observableArrayList(categoria));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @FXML
     private void limpiarFormulario() {
         tblLibros.getSelectionModel().clearSelection();
         idSeleccionado = null;
@@ -178,5 +217,6 @@ public class LibroController {
         txtAutor.clear();
         txtAnio_publicacion.clear();
         txtPrecio.clear();
+        cmbCategorias.getSelectionModel().clearSelection();
     }
 }
